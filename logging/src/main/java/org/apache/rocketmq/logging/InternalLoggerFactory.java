@@ -44,6 +44,7 @@ public abstract class InternalLoggerFactory {
         if (loggerType != null) {
             internalLoggerFactory = loggerFactoryCache.get(loggerType);
         }
+        //默认使用sl4j门面模式获取logger
         if (internalLoggerFactory == null) {
             internalLoggerFactory = loggerFactoryCache.get(DEFAULT_LOGGER);
         }

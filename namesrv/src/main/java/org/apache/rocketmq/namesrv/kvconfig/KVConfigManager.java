@@ -29,11 +29,21 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.namesrv.NamesrvController;
 public class KVConfigManager {
+
+    /**
+     * 根据模块打印不同loggerName
+     */
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
     private final NamesrvController namesrvController;
 
+    /**
+     * 读写配置锁
+     */
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    /**
+     * 配置存储 key-namespace value-具体的键值配置信息
+     */
     private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable =
         new HashMap<String, HashMap<String, String>>();
 
@@ -41,6 +51,9 @@ public class KVConfigManager {
         this.namesrvController = namesrvController;
     }
 
+    /**
+     * 从kvConfig.json文件加载KV配置
+     */
     public void load() {
         String content = null;
         try {
@@ -60,6 +73,7 @@ public class KVConfigManager {
 
     public void putKVConfig(final String namespace, final String key, final String value) {
         try {
+            //配置存储使用了HashMap,所以此处添加了锁，否则会有线程安全问题
             this.lock.writeLock().lockInterruptibly();
             try {
                 HashMap<String, String> kvTable = this.configTable.get(namespace);
@@ -87,6 +101,9 @@ public class KVConfigManager {
         this.persist();
     }
 
+    /**
+     * 把配置信息存储到kvConfig.json文件中
+     */
     public void persist() {
         try {
             this.lock.readLock().lockInterruptibly();
@@ -97,6 +114,7 @@ public class KVConfigManager {
                 String content = kvConfigSerializeWrapper.toJson();
 
                 if (null != content) {
+                    //把存储信息由json字符串写进kvConfig.json中
                     MixAll.string2File(content, this.namesrvController.getNamesrvConfig().getKvConfigPath());
                 }
             } catch (IOException e) {

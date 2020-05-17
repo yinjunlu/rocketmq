@@ -83,4 +83,8 @@ public class NamesrvConfig {
     public void setConfigStorePath(final String configStorePath) {
         this.configStorePath = configStorePath;
     }
+
+    public static void main(String[] args) {
+        System.out.println( System.getProperty("user.home"));
+    }
 }
